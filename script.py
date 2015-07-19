@@ -4,6 +4,7 @@ import time
 from time import strftime
 import atexit
 import urllib2
+import config;
 
 
 def wait_for_internet_connection():
@@ -25,10 +26,8 @@ class Sensor:
         self.leftopenalarm = -1
 
 
-sensors = []
-sensors.append(Sensor('LR Door', 'P8_8'))
-sensors.append(Sensor('Back Door', 'P8_10'))
-sensors.append(Sensor('Front Door', 'P8_12'))
+sensors = config.sensors
+
 
 for sensor in sensors:
     print "trying " + sensor.name + " on port " + "sensor.port"
