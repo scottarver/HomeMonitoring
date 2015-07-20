@@ -1,20 +1,22 @@
+#!/usr/bin/env python
 import Adafruit_BBIO.GPIO as GPIO
 from pushbullet import PushBullet
 import time
 from time import strftime
 import atexit
 import urllib2
-import config;
-
+import config
 
 def wait_for_internet_connection():
+    print "waiting for connection"
     while True:
         try:
             response = urllib2.urlopen('http://64.233.168.101', timeout=1)
+            print "connected"
             return
         except urllib2.URLError:
+            print "no connection"
             pass
-
 
 class Sensor:
     def __init__(self, name, port):
@@ -26,18 +28,24 @@ class Sensor:
         self.leftopenalarm = -1
 
 
-sensors = config.sensors
+print "starting, sleeping 10"
+time.sleep(10)
+print "slept"
+
+wait_for_internet_connection()
+
+sensors = []
+for sensor in config.sensors:
+    sensors.append(Sensor(sensor[0],sensor[1]))
 
 
 for sensor in sensors:
     print "trying " + sensor.name + " on port " + "sensor.port"
     GPIO.setup(sensor.port, GPIO.IN)
 
-wait_for_internet_connection()
-
-pb = PushBullet('')
-pb_ferin = PushBullet('')
-pb_chance = PushBullet('')
+pushers = []
+for pusher_key in config.pb_keys:
+    pushers.append(PushBullet(pusher_key))
 
 messages = []
 lastsend = 0
@@ -55,9 +63,8 @@ def sendPushes():
         messages = []
         title = "Home Alert"
 
-        success, push = pb.push_note(title, sendthis)
-        # success, push = pb_ferin.push_note(title, sendthis)
-        # success, push = pb_chance.push_note(title, sendthis)
+        for pb in pushers:
+            success, push = pb.push_note(title, sendthis)
 
 
 def sendPush(title, message):
